@@ -86,7 +86,8 @@
     
     int maxOffset = self.collectionView.contentSize.height - self.collectionView.bounds.size.height;
     if (shouldLoadImages && maxOffset - self.collectionView.contentOffset.y < mySrollViewOffset) {
-        if ([self getImagesForQuery:self.searchBar.text Start:self.startOfRequest]) {
+        NSString *query = [self.searchBar.text stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        if ([self getImagesForQuery:query Start:self.startOfRequest]) {
             dispatch_sync(dispatch_get_main_queue(), ^{
                 [self.indicator stopAnimating];
                 [self.indicator removeFromSuperview];
@@ -123,19 +124,27 @@
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
 }
 
-- (void) handleLostInternetConnection {
-    if (self.state != myRequestStateNoInternetConnection) {
-        self.state = myRequestStateNoInternetConnection;
-        UIAlertController * alert = [UIAlertController alertControllerWithTitle:@"Error" message:@"Can't load data. Probably lost internet connection." preferredStyle:UIAlertControllerStyleAlert];
-        
-        UIAlertAction* ok = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                [alert dismissViewControllerAnimated:YES completion:nil];
-                            }];
-        
-        [alert addAction:ok];
-        
-        [self presentViewController:alert animated:YES completion:nil];
+- (void) handleLoadingDataError:(NSError *)error {
+    if (error.code == -1009) {
+        if (self.state != myRequestStateNoInternetConnection) {
+            self.state = myRequestStateNoInternetConnection;
+        } else {
+            return;
+        }
+    } else {
+        self.timerIsTicking = NO;
+        [self.indicator stopAnimating];
+        [self.indicator removeFromSuperview];
     }
+    UIAlertController * alert = [UIAlertController alertControllerWithTitle:@"Error" message:error.localizedDescription preferredStyle:UIAlertControllerStyleAlert];
+    
+    UIAlertAction* ok = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+        [alert dismissViewControllerAnimated:YES completion:nil];
+    }];
+    
+    [alert addAction:ok];
+    
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark - finding images
@@ -167,7 +176,7 @@
     if (data == nil) {
         dispatch_sync(dispatch_get_main_queue(), ^{
             
-            [self handleLostInternetConnection];
+            [self handleLoadingDataError:error];
         });
         return NO;
     }
@@ -183,7 +192,7 @@
                     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                         
                         UIImage *img = [self getImageFromURL:[imageDic objectForKey:@"tbUrl"]];
-                        
+                        //NSLog(@"Img: %@ for Q: %@", img, query);
                         if (img) {
                             dispatch_sync(dispatch_get_main_queue(), ^{
                                 
@@ -191,7 +200,8 @@
                                 [imgCont setTbImage:[img copy]];
                                 [imgCont setFullPicUrl:[imageDic objectForKey:@"unescapedUrl"]];
                                 
-                                if ([self.searchBar.text isEqualToString:query]) {
+                                NSString *escapedQuery = [self.searchBar.text stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+                                if ([escapedQuery isEqualToString:query]) {
                                     [self.images addObject:imgCont];
                                     [self.collectionView reloadData];
                                 }
@@ -224,6 +234,8 @@
     [self.collectionView reloadData];
     if ([searchText isEqualToString:@""]) {
         self.timerIsTicking = NO;
+        [self.indicator stopAnimating];
+        [self.indicator removeFromSuperview];
     } else {
         self.timerIsTicking = YES;
         self.state = myRequestStateDefault;
