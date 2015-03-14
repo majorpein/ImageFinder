@@ -42,11 +42,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ImageFinder/ViewController.m"
-            timestampString = "448018275.667827"
+            timestampString = "448063155.399472"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "185"
-            endingLineNumber = "185"
+            startingLineNumber = "187"
+            endingLineNumber = "187"
             landmarkName = "-getImagesForQuery:Start:"
             landmarkType = "5">
          </BreakpointContent>

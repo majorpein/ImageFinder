@@ -15,12 +15,15 @@
     if (self.fullImage) return;
     
     NSURL *url = [NSURL URLWithString:self.fullPicUrl];
+    /*
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
     
     NSError *error;
     NSURLResponse *response;
     
     NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
+     */
+    NSData *data = [NSData dataWithContentsOfURL:url];
     UIImage *img = [UIImage imageWithData:data];
     
     if (img) {

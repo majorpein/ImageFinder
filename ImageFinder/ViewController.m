@@ -151,6 +151,7 @@
 
 - (UIImage *) getImageFromURL:(NSString *)urlString {
     
+    /*
     NSURL *url = [NSURL URLWithString:urlString];
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
     
@@ -158,7 +159,8 @@
     NSURLResponse *response;
     
     NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
-    
+    */
+    NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:urlString]];
     return [UIImage imageWithData:data];
 }
 
@@ -166,7 +168,7 @@
     
     
     //NSLog(@"Q: %@, s: %ld", query, start);
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@&start=%ld&q=%@&rsz=8", self.baseUrl, start, query]];
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@&start=%ld&q=%@&rsz=8", self.baseUrl, (long)start, query]];
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
     
     NSError *error;
@@ -197,7 +199,7 @@
                             dispatch_sync(dispatch_get_main_queue(), ^{
                                 
                                 IFImageContainer *imgCont = [[IFImageContainer alloc] init];
-                                [imgCont setTbImage:[img copy]];
+                                [imgCont setTbImage:img];
                                 [imgCont setFullPicUrl:[imageDic objectForKey:@"unescapedUrl"]];
                                 
                                 NSString *escapedQuery = [self.searchBar.text stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
