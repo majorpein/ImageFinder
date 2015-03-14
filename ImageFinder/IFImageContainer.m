@@ -10,6 +10,17 @@
 
 @implementation IFImageContainer
 
+- (id)init {
+    if (self = [super init]) {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(memoryWarning:) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
+    }
+    return self;
+}
+
+- (void)memoryWarning:(NSNotification*)note {
+    if (self.fullImage) [self setFullImage:nil];
+}
+
 - (void) loadFullPic {
     
     if (self.fullImage) return;
